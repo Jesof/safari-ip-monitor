@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # Скрипт для генерации PNG иконок из SVG
-# Использует qlmanage (встроенный в macOS) для рендеринга SVG
+# Использует Inkscape для рендеринга SVG
 
 SVG_FILE="icon.svg"
 SIZES=(16 32 48 96 128)
 
-echo "Генерация PNG иконок из SVG..."
+echo "Генерация PNG иконок из SVG с помощью Inkscape..."
 
 # Проверяем наличие SVG файла
 if [ ! -f "$SVG_FILE" ]; then
@@ -14,16 +14,26 @@ if [ ! -f "$SVG_FILE" ]; then
     exit 1
 fi
 
+# Проверяем наличие Inkscape
+if ! command -v inkscape &> /dev/null; then
+    echo "Ошибка: Inkscape не установлен"
+    echo "Установите Inkscape: brew install inkscape"
+    exit 1
+fi
+
 # Генерируем PNG для каждого размера
 for size in "${SIZES[@]}"; do
     echo "Создание icon-${size}.png..."
     
-    # Используем qlmanage для рендеринга SVG
-    qlmanage -t -s $size -o . "$SVG_FILE" > /dev/null 2>&1
+    # Используем Inkscape для рендеринга SVG
+    inkscape "$SVG_FILE" \
+        --export-type=png \
+        --export-filename="icon-${size}.png" \
+        --export-width=$size \
+        --export-height=$size \
+        > /dev/null 2>&1
     
-    # Переименовываем результат
-    if [ -f "icon.svg.png" ]; then
-        mv "icon.svg.png" "icon-${size}.png"
+    if [ -f "icon-${size}.png" ]; then
         echo "✓ icon-${size}.png создана"
     else
         echo "✗ Не удалось создать icon-${size}.png"
@@ -31,7 +41,4 @@ for size in "${SIZES[@]}"; do
 done
 
 echo ""
-echo "Готово! Если иконки не созданы, используйте онлайн конвертер:"
-echo "https://cloudconvert.com/svg-to-png"
-echo ""
-echo "Или создайте их в Xcode (File > New > Image Set)"
+echo "✓ Готово! Все иконки сгенерированы."

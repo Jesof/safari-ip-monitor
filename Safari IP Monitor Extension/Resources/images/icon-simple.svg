@@ -1,33 +1,32 @@
 <svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
-  <!-- Simple solid color background instead of gradient -->
+  <!-- Simple solid color background -->
   <circle cx="64" cy="64" r="60" fill="#667eea"/>
   
-  <!-- Network Icon -->
-  <g fill="white" stroke="white" stroke-width="2">
-    <!-- Center Node -->
-    <circle cx="64" cy="64" r="8" />
-    
-    <!-- Top Node -->
-    <circle cx="64" cy="28" r="6" />
-    <line x1="64" y1="34" x2="64" y2="56" stroke-width="3"/>
-    
-    <!-- Bottom Node -->
-    <circle cx="64" cy="100" r="6" />
-    <line x1="64" y1="94" x2="64" y2="72" stroke-width="3"/>
-    
-    <!-- Left Node -->
-    <circle cx="28" cy="64" r="6" />
-    <line x1="34" y1="64" x2="56" y2="64" stroke-width="3"/>
-    
-    <!-- Right Node -->
-    <circle cx="100" cy="64" r="6" />
-    <line x1="94" y1="64" x2="72" y2="64" stroke-width="3"/>
+  <!-- Shield Background -->
+  <path d="M 64 20 C 50 25, 36 28, 28 30 L 28 55 C 28 75, 40 92, 64 105 C 88 92, 100 75, 100 55 L 100 30 C 92 28, 78 25, 64 20 Z" 
+        fill="white" opacity="0.95"/>
+  
+  <!-- Monitor/Eye Icon -->
+  <g transform="translate(64, 50)">
+    <!-- Eye shape -->
+    <ellipse cx="0" cy="0" rx="20" ry="12" fill="none" stroke="#667eea" stroke-width="3"/>
+    <!-- Pupil -->
+    <circle cx="0" cy="0" r="6" fill="#667eea"/>
+    <circle cx="0" cy="0" r="3" fill="white"/>
   </g>
   
-  <!-- Lock Icon (Security) -->
-  <g transform="translate(90, 20)">
-    <rect x="0" y="8" width="16" height="18" rx="2" fill="#22c55e"/>
-    <path d="M 3 8 L 3 5 C 3 2 5 0 8 0 C 11 0 13 2 13 5 L 13 8" stroke="#22c55e" stroke-width="2.5" fill="none"/>
-    <circle cx="8" cy="16" r="2" fill="white"/>
+  <!-- IP Address Display -->
+  <g transform="translate(64, 78)">
+    <rect x="-28" y="-8" width="56" height="16" rx="8" fill="#667eea" opacity="0.2"/>
+    <text x="0" y="3" font-family="Monaco, monospace" font-size="12" font-weight="bold" 
+          fill="#667eea" text-anchor="middle">192.168</text>
   </g>
+  
+  <!-- Network activity dots -->
+  <circle cx="44" cy="95" r="2.5" fill="#22c55e"/>
+  <circle cx="52" cy="95" r="2.5" fill="#22c55e"/>
+  <circle cx="60" cy="95" r="2.5" fill="#22c55e" opacity="0.5"/>
+  <circle cx="68" cy="95" r="2.5" fill="#22c55e" opacity="0.3"/>
+  <circle cx="76" cy="95" r="2.5" fill="#22c55e" opacity="0.3"/>
+  <circle cx="84" cy="95" r="2.5" fill="#22c55e" opacity="0.3"/>
 </svg>
