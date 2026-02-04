@@ -2,7 +2,7 @@
 
 A Safari extension for macOS that monitors network connections, displays security information, and checks IPv6 support for visited websites.
 
-<img src="Safari IP Monitor/Assets.xcassets/AppIcon.appiconset/icon_128x128.png" alt="Safari IP Monitor Icon" width="128" height="128">
+<img src="Safari IP Monitor Extension/Resources/images/icon-128.png" alt="Safari IP Monitor Icon" width="128" height="128">
 
 ## ✨ Features
 
