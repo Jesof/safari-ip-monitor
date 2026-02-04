@@ -1,0 +1,58 @@
+{
+  "extensionName": {
+    "message": "Safari IP Monitor",
+    "description": "Название расширения"
+  },
+  "extensionDescription": {
+    "message": "Отображает информацию о безопасности соединений и поддержке IPv6",
+    "description": "Описание расширения"
+  },
+  "popupTitle": {
+    "message": "Информация о соединениях",
+    "description": "Заголовок popup окна"
+  },
+  "columnDomain": {
+    "message": "Домен",
+    "description": "Колонка таблицы - домен"
+  },
+  "columnProtocol": {
+    "message": "Протокол",
+    "description": "Колонка таблицы - протокол"
+  },
+  "columnRequests": {
+    "message": "Запросы",
+    "description": "Колонка таблицы - количество запросов"
+  },
+  "columnIPv6": {
+    "message": "IPv6",
+    "description": "Колонка таблицы - поддержка IPv6"
+  },
+  "columnIPAddresses": {
+    "message": "IP Адреса",
+    "description": "Колонка таблицы - IP адреса"
+  },
+  "https": {
+    "message": "HTTPS",
+    "description": "Защищенное соединение"
+  },
+  "http": {
+    "message": "HTTP",
+    "description": "Незащищенное соединение"
+  },
+  "ipv6Supported": {
+    "message": "Поддерживается",
+    "description": "IPv6 поддерживается"
+  },
+  "ipv6Unknown": {
+    "message": "Неизвестно",
+    "description": "IPv6 статус неизвестен"
+  },
+  "noData": {
+    "message": "Нет данных для этой страницы",
+    "description": "Сообщение когда нет данных"
+  },
+  "dnsResolveOption": {
+    "message": "Резолвить IP через DNS",
+    "description": "Опция включения/выключения DNS резолва IP адресов"
+  }
+}

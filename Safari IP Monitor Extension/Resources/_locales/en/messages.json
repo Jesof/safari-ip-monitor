@@ -1,10 +1,58 @@
 {
-    "extension_name": {
-        "message": "Safari IP Monitor Extension",
-        "description": "The display name for the extension."
-    },
-    "extension_description": {
-        "message": "This is Safari IP Monitor Extension. You should tell us what your extension does here.",
-        "description": "Description of what the extension does."
-    }
+  "extensionName": {
+    "message": "Safari IP Monitor",
+    "description": "Extension name"
+  },
+  "extensionDescription": {
+    "message": "Displays connection security and IPv6 support information",
+    "description": "Extension description"
+  },
+  "popupTitle": {
+    "message": "Connection Information",
+    "description": "Popup window title"
+  },
+  "columnDomain": {
+    "message": "Domain",
+    "description": "Table column - domain"
+  },
+  "columnProtocol": {
+    "message": "Protocol",
+    "description": "Table column - protocol"
+  },
+  "columnRequests": {
+    "message": "Requests",
+    "description": "Table column - request count"
+  },
+  "columnIPv6": {
+    "message": "IPv6",
+    "description": "Table column - IPv6 support"
+  },
+  "columnIPAddresses": {
+    "message": "IP Addresses",
+    "description": "Table column - IP addresses"
+  },
+  "https": {
+    "message": "HTTPS",
+    "description": "Secure connection"
+  },
+  "http": {
+    "message": "HTTP",
+    "description": "Insecure connection"
+  },
+  "ipv6Supported": {
+    "message": "Supported",
+    "description": "IPv6 is supported"
+  },
+  "ipv6Unknown": {
+    "message": "Unknown",
+    "description": "IPv6 status unknown"
+  },
+  "noData": {
+    "message": "No data for this page",
+    "description": "Message when no data available"
+  },
+  "dnsResolveOption": {
+    "message": "Resolve IP via DNS",
+    "description": "Option to enable/disable DNS IP address resolution"
+  }
 }

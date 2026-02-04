@@ -1,11 +1,82 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="popup.css">
-    <script type="module" src="popup.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Safari IP Monitor</title>
+  <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-    <strong>Hello World!</strong>
+  <div class="container">
+    <header>
+      <h1 class="title">
+        <span class="icon">🔍</span>
+        <span data-i18n="popupTitle">Информация о соединениях</span>
+      </h1>
+      <div class="settings">
+        <label class="toggle-label">
+          <input type="checkbox" id="dns-resolve-toggle" checked>
+          <span class="toggle-switch"></span>
+          <span class="toggle-text" data-i18n="dnsResolveOption">Резолвить IP через DNS</span>
+        </label>
+      </div>
+    </header>
+    
+    <main>
+      <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Загрузка данных...</p>
+      </div>
+      
+      <div id="no-data" class="no-data" style="display: none;">
+        <span class="icon">📭</span>
+        <p data-i18n="noData">Нет данных для этой страницы</p>
+        <small>Обновите страницу или перейдите на другой сайт</small>
+      </div>
+      
+      <div id="content" style="display: none;">
+        <div class="stats">
+          <div class="stat-item">
+            <span class="stat-label">Доменов:</span>
+            <span class="stat-value" id="domain-count">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Запросов:</span>
+            <span class="stat-value" id="request-count">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Защищено:</span>
+            <span class="stat-value" id="secure-status">-</span>
+          </div>
+        </div>
+        
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th data-i18n="columnDomain">Домен</th>
+                <th data-i18n="columnProtocol">Протокол</th>
+                <th data-i18n="columnRequests">Запросы</th>
+                <th data-i18n="columnIPAddresses">IP Адреса</th>
+              </tr>
+            </thead>
+            <tbody id="table-body">
+              <!-- Заполняется динамически -->
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="footer-info">
+          <small>
+            ⚠️ IP адреса получены через DNS резолюцию. Safari мог использовать любой из показанных адресов.
+            <br>
+            Safari API не предоставляет информацию о фактически использованном IP-адресе.
+          </small>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="popup.js"></script>
 </body>
 </html>
