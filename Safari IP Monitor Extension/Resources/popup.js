@@ -11,6 +11,18 @@ const requestCountEl = document.getElementById('request-count');
 const secureStatusEl = document.getElementById('secure-status');
 const dnsResolveToggle = document.getElementById('dns-resolve-toggle');
 
+// Текущая вкладка и интервал обновления
+let currentTabId = null;
+let updateInterval = null;
+
+// Прослушивание сообщений от background script
+browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === 'TAB_DATA_UPDATED' && message.tabId === currentTabId) {
+    // Обновляем данные без перезагрузки всего popup
+    refreshData();
+  }
+});
+
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', async () => {
   try {
@@ -53,6 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     const currentTab = tabs[0];
+    currentTabId = currentTab.id;
     
     // Запрашиваем данные у background script
     const response = await browser.runtime.sendMessage({
@@ -64,6 +77,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.log('📊 Получено доменов:', response.data.domains.length);
       console.log('Домены:', response.data.domains.map(d => d.domain));
       displayData(response.data, currentTab.id);
+      
+      // Запускаем автообновление каждые 2 секунды
+      startAutoRefresh();
     } else {
       console.log('❌ Нет данных для отображения');
       showNoData();
@@ -113,7 +129,13 @@ function displayData(data, tabId) {
   noDataEl.style.display = 'none';
   contentEl.style.display = 'block';
   
-  const { domains, mainDomain, userPublicIP } = data;
+  const { domains: rawDomains, mainDomain, userPublicIP } = data;
+  
+  // Создаём копию массива для сортировки
+  const domains = [...rawDomains];
+  
+  // Сортируем домены по количеству запросов (по убыванию)
+  domains.sort((a, b) => (b.requestCount || 0) - (a.requestCount || 0));
   
   // Вычисляем статус безопасности из доменов
   const hasSecure = domains.some(d => d.protocol === 'https');
@@ -137,23 +159,16 @@ function displayData(data, tabId) {
     secureStatusEl.textContent = '✗ HTTP';
     secureStatusEl.className = 'stat-value insecure';
   } else if (hasSecure && hasInsecure) {
-    secureStatusEl.textContent = '⚠ Смешанный';
+    secureStatusEl.textContent = '⚠ ' + browser.i18n.getMessage('statusMixed');
     secureStatusEl.className = 'stat-value mixed';
   } else {
     secureStatusEl.textContent = '-';
     secureStatusEl.className = 'stat-value';
   }
   
-  // Сортируем домены: главный первым, затем по количеству запросов
-  domains.sort((a, b) => {
-    if (a.domain === mainDomain) return -1;
-    if (b.domain === mainDomain) return 1;
-    return b.requestCount - a.requestCount;
-  });
-  
   // Заполняем таблицу
   tableBody.innerHTML = '';
-  domains.forEach(domain => {
+  domains.forEach((domain, index) => {
     const row = createDomainRow(domain, mainDomain, tabId);
     tableBody.appendChild(row);
   });
@@ -208,12 +223,12 @@ function createIPAddressesView(domain, ipAddresses, tabId) {
   
   if (!ipAddresses) {
     // IP еще не загружены - запускаем загрузку
-    container.innerHTML = '<span class="ip-loading">⏳ Загрузка...</span>';
+    container.innerHTML = '<span class="ip-loading">⏳ ' + browser.i18n.getMessage('ipLoading') + '</span>';
     
     resolveIPAddresses(domain, tabId).then(ips => {
       updateIPAddressesView(container, ips, domain);
     }).catch(() => {
-      container.innerHTML = '<span class="ip-error">⚠️ Ошибка</span>';
+      container.innerHTML = '<span class="ip-error">⚠️ ' + browser.i18n.getMessage('ipError') + '</span>';
     });
     
   } else {
@@ -229,7 +244,7 @@ function updateIPAddressesView(container, ips, domain) {
   
   // Проверка на локальный домен
   if (ips.isLocal) {
-    container.innerHTML = '<span class="ip-local">🏠 Локальный домен</span>';
+    container.innerHTML = '<span class="ip-local">🏠 ' + browser.i18n.getMessage('ipLocal') + '</span>';
     return;
   }
   
@@ -237,7 +252,7 @@ function updateIPAddressesView(container, ips, domain) {
   const hasIPv6 = ips.ipv6 && ips.ipv6.length > 0;
   
   if (!hasIPv4 && !hasIPv6) {
-    container.innerHTML = '<span class="ip-none">? Неизвестно</span>';
+    container.innerHTML = '<span class="ip-none">? ' + browser.i18n.getMessage('ipUnknown') + '</span>';
     return;
   }
   
@@ -258,7 +273,7 @@ function updateIPAddressesView(container, ips, domain) {
       const ipSpan = document.createElement('span');
       ipSpan.className = 'ip-address ipv4-address';
       ipSpan.textContent = ip;
-      ipSpan.title = `Кликните чтобы скопировать ${ip}`;
+      ipSpan.title = browser.i18n.getMessage('clickToCopy') + ' ' + ip;
       ipSpan.addEventListener('click', (e) => {
         e.stopPropagation();
         copyToClipboard(ip);
@@ -287,7 +302,7 @@ function updateIPAddressesView(container, ips, domain) {
       const ipSpan = document.createElement('span');
       ipSpan.className = 'ip-address ipv6-address';
       ipSpan.textContent = ip;
-      ipSpan.title = `Кликните чтобы скопировать ${ip}`;
+      ipSpan.title = browser.i18n.getMessage('clickToCopy') + ' ' + ip;
       ipSpan.addEventListener('click', (e) => {
         e.stopPropagation();
         copyToClipboard(ip);
@@ -366,7 +381,7 @@ function displayUserPublicIP(userIP) {
       <span class="user-ip-icon">🌐</span>
       <div class="user-ip-details">
         ${ipInfo.join('<br>')}
-        ${userIP.hasIPv6Connectivity ? '<span class="ipv6-enabled">✓ IPv6 активен</span>' : ''}
+        ${userIP.hasIPv6Connectivity ? '<span class="ipv6-enabled">' + browser.i18n.getMessage('ipv6Active') + '</span>' : ''}
       </div>
     </div>
   `;
@@ -376,4 +391,108 @@ function displayUserPublicIP(userIP) {
 document.addEventListener('copied', (event) => {
   // Можно добавить toast уведомление
   console.log('Копирование успешно:', event.detail);
+});
+
+// Запуск автообновления данных
+function startAutoRefresh() {
+  // Очищаем предыдущий интервал, если есть
+  if (updateInterval) {
+    clearInterval(updateInterval);
+  }
+  
+  // Обновляем каждые 2 секунды
+  updateInterval = setInterval(() => {
+    refreshData();
+  }, 2000);
+}
+
+// Обновление данных без полной перезагрузки
+async function refreshData() {
+  if (!currentTabId) return;
+  
+  try {
+    const response = await browser.runtime.sendMessage({
+      action: 'getTabData',
+      tabId: currentTabId
+    });
+    
+    if (response.success && response.data && response.data.domains.length > 0) {
+      // Обновляем данные и пересортируем
+      updateDisplayData(response.data);
+    }
+  } catch (error) {
+    console.error('Ошибка обновления данных:', error);
+  }
+}
+
+// Обновление отображаемых данных (без полной перезагрузки)
+function updateDisplayData(data) {
+  const { domains: rawDomains, mainDomain, userPublicIP } = data;
+  
+  // Создаём копию массива для сортировки
+  const domains = [...rawDomains];
+  
+  // Сортируем домены по количеству запросов (по убыванию)
+  domains.sort((a, b) => (b.requestCount || 0) - (a.requestCount || 0));
+  
+  // Обновляем статистику
+  const totalRequests = domains.reduce((sum, d) => sum + d.requestCount, 0);
+  domainCountEl.textContent = domains.length;
+  requestCountEl.textContent = totalRequests;
+  
+  // Вычисляем статус безопасности
+  const hasSecure = domains.some(d => d.protocol === 'https');
+  const hasInsecure = domains.some(d => d.protocol === 'http');
+  
+  if (hasSecure && !hasInsecure) {
+    secureStatusEl.textContent = '✓ HTTPS';
+    secureStatusEl.className = 'stat-value secure';
+  } else if (hasInsecure && !hasSecure) {
+    secureStatusEl.textContent = '✗ HTTP';
+    secureStatusEl.className = 'stat-value insecure';
+  } else if (hasSecure && hasInsecure) {
+    secureStatusEl.textContent = '⚠ ' + browser.i18n.getMessage('statusMixed');
+    secureStatusEl.className = 'stat-value mixed';
+  } else {
+    secureStatusEl.textContent = '-';
+    secureStatusEl.className = 'stat-value';
+  }
+  
+  // Обновляем таблицу только если порядок или содержимое изменились
+  updateTable(domains, mainDomain);
+}
+
+// Обновление таблицы (сохраняя строки, только обновляя счетчики)
+function updateTable(domains, mainDomain) {
+  const currentRows = Array.from(tableBody.querySelectorAll('tr'));
+  const currentDomains = currentRows.map(row => row.querySelector('.domain').textContent);
+  const newDomains = domains.map(d => d.domain);
+  
+  // Проверяем, изменился ли порядок или список доменов
+  const needsRebuild = currentDomains.length !== newDomains.length ||
+    currentDomains.some((d, i) => d !== newDomains[i]);
+  
+  if (needsRebuild) {
+    // Полная перестройка таблицы
+    tableBody.innerHTML = '';
+    domains.forEach(domain => {
+      const row = createDomainRow(domain, mainDomain, currentTabId);
+      tableBody.appendChild(row);
+    });
+  } else {
+    // Обновляем только счетчики запросов
+    currentRows.forEach((row, index) => {
+      const requestCell = row.querySelector('.request-count');
+      if (requestCell) {
+        requestCell.textContent = domains[index].requestCount;
+      }
+    });
+  }
+}
+
+// Очистка при закрытии popup
+window.addEventListener('beforeunload', () => {
+  if (updateInterval) {
+    clearInterval(updateInterval);
+  }
 });

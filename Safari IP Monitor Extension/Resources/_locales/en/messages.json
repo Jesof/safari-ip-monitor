@@ -54,5 +54,61 @@
   "dnsResolveOption": {
     "message": "Resolve IP via DNS",
     "description": "Option to enable/disable DNS IP address resolution"
+  },
+  "statusMixed": {
+    "message": "Mixed",
+    "description": "Mixed security status (HTTP and HTTPS)"
+  },
+  "ipLoading": {
+    "message": "Loading...",
+    "description": "IP addresses are loading"
+  },
+  "ipError": {
+    "message": "Error",
+    "description": "Error loading IP addresses"
+  },
+  "ipLocal": {
+    "message": "Local domain",
+    "description": "Local domain"
+  },
+  "ipUnknown": {
+    "message": "Unknown",
+    "description": "IP address unknown"
+  },
+  "clickToCopy": {
+    "message": "Click to copy",
+    "description": "Tooltip for copying to clipboard"
+  },
+  "allConnectionsSecure": {
+    "message": "✓ All connections secure (HTTPS)",
+    "description": "All connections use HTTPS"
+  },
+  "insecureConnectionsDetected": {
+    "message": "⚠️ Insecure connections detected (HTTP)",
+    "description": "Insecure HTTP connections detected"
+  },
+  "ipv6Active": {
+    "message": "✓ IPv6 active",
+    "description": "IPv6 connection is active"
+  },
+  "loading": {
+    "message": "Loading data...",
+    "description": "Loading data"
+  },
+  "noDataHint": {
+    "message": "Refresh the page or visit another site",
+    "description": "Hint when no data available"
+  },
+  "statDomains": {
+    "message": "Domains:",
+    "description": "Number of domains"
+  },
+  "statRequests": {
+    "message": "Requests:",
+    "description": "Number of requests"
+  },
+  "statSecure": {
+    "message": "Secure:",
+    "description": "Security status"
   }
 }

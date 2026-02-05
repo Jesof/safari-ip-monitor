@@ -15,10 +15,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Проверяем состояние расширения при запуске
         checkExtensionState()
         
-        // Автоматически закрываем приложение после короткой задержки
-        // Расширение Safari продолжит работать в фоновом режиме
+        // Приложение должно оставаться запущенным для работы Safari Web Extension
+        // Минимизируем окно
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            NSApplication.shared.terminate(nil)
+            NSApp.windows.first?.miniaturize(nil)
         }
     }
     
@@ -38,14 +38,30 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Extension State
     
     private func checkExtensionState() {
-        SFSafariExtensionManager.getStateOfSafariExtension(withIdentifier: "com.safari.ipmonitor.extension") { (state, error) in
-            if let error = error {
-                print("Error checking extension state: \(error.localizedDescription)")
-                return
-            }
-            
-            if let state = state {
-                print("Extension enabled: \(state.isEnabled)")
+        let extensionIdentifier = "ru.jesof.safari.ipmonitor.extension"
+        print("🔍 Checking extension state for: \(extensionIdentifier)")
+        
+        SFSafariExtensionManager.getStateOfSafariExtension(withIdentifier: extensionIdentifier) { (state, error) in
+            DispatchQueue.main.async {
+                if let error = error {
+                    let nsError = error as NSError
+                    print("⚠️ Extension state check error: \(error.localizedDescription)")
+                    print("   Domain: \(nsError.domain), Code: \(nsError.code)")
+                    print("   💡 This is normal if Safari hasn't loaded the extension yet.")
+                    print("   👉 Open Safari → Settings → Extensions to enable the extension.")
+                    return
+                }
+                
+                if let state = state {
+                    if state.isEnabled {
+                        print("✅ Extension is ENABLED")
+                    } else {
+                        print("⚠️ Extension is installed but DISABLED")
+                        print("   👉 Enable it in Safari → Settings → Extensions")
+                    }
+                } else {
+                    print("❓ Extension state is unknown")
+                }
             }
         }
     }

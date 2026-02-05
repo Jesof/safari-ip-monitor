@@ -54,5 +54,61 @@
   "dnsResolveOption": {
     "message": "Резолвить IP через DNS",
     "description": "Опция включения/выключения DNS резолва IP адресов"
+  },
+  "statusMixed": {
+    "message": "Смешанный",
+    "description": "Смешанный статус безопасности (HTTP и HTTPS)"
+  },
+  "ipLoading": {
+    "message": "Загрузка...",
+    "description": "IP адреса загружаются"
+  },
+  "ipError": {
+    "message": "Ошибка",
+    "description": "Ошибка при загрузке IP адресов"
+  },
+  "ipLocal": {
+    "message": "Локальный домен",
+    "description": "Локальный домен"
+  },
+  "ipUnknown": {
+    "message": "Неизвестно",
+    "description": "IP адрес неизвестен"
+  },
+  "clickToCopy": {
+    "message": "Кликните чтобы скопировать",
+    "description": "Подсказка для копирования в буфер обмена"
+  },
+  "allConnectionsSecure": {
+    "message": "✓ Все соединения защищены (HTTPS)",
+    "description": "Все соединения используют HTTPS"
+  },
+  "insecureConnectionsDetected": {
+    "message": "⚠️ Обнаружены незащищенные соединения (HTTP)",
+    "description": "Обнаружены незащищенные HTTP соединения"
+  },
+  "ipv6Active": {
+    "message": "✓ IPv6 активен",
+    "description": "IPv6 подключение активно"
+  },
+  "loading": {
+    "message": "Загрузка данных...",
+    "description": "Загрузка данных"
+  },
+  "noDataHint": {
+    "message": "Обновите страницу или перейдите на другой сайт",
+    "description": "Подсказка когда нет данных"
+  },
+  "statDomains": {
+    "message": "Доменов:",
+    "description": "Количество доменов"
+  },
+  "statRequests": {
+    "message": "Запросов:",
+    "description": "Количество запросов"
+  },
+  "statSecure": {
+    "message": "Защищено:",
+    "description": "Статус защищённости"
   }
 }

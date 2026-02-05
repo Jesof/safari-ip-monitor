@@ -25,7 +25,7 @@ async function restoreTabData() {
     if (result.tabData) {
       const stored = JSON.parse(result.tabData);
       const now = Date.now();
-      const MAX_AGE = 300000; // 5 минут - максимальный возраст данных
+      const MAX_AGE = 1800000; // 30 минут - максимальный возраст данных
       
       for (const [tabId, data] of Object.entries(stored)) {
         // Проверяем актуальность данных (не старше 5 минут)
@@ -170,6 +170,9 @@ browser.webRequest.onBeforeRequest.addListener(
       // Сохраняем данные в storage
       saveTabData();
       
+      // Уведомляем popup об обновлении данных (если открыт)
+      notifyPopupUpdate(tabId);
+      
     } catch (error) {
       console.error('Ошибка обработки запроса:', error);
     }
@@ -189,6 +192,17 @@ browser.webRequest.onCompleted.addListener(
   },
   { urls: ['<all_urls>'] }
 );
+
+// Уведомление popup об обновлении данных
+function notifyPopupUpdate(tabId) {
+  // Отправляем сообщение в runtime для всех слушателей (включая popup)
+  browser.runtime.sendMessage({
+    type: 'TAB_DATA_UPDATED',
+    tabId: tabId
+  }).catch(() => {
+    // Popup может быть закрыт, игнорируем ошибку
+  });
+}
 
 // Обновление иконки расширения в зависимости от статуса соединений
 async function updateTabIcon(tabId) {
@@ -217,14 +231,14 @@ async function updateTabIcon(tabId) {
       await browser.action.setBadgeText({ tabId, text: '' });
       await browser.action.setTitle({ 
         tabId, 
-        title: '✓ Все соединения защищены (HTTPS)' 
+        title: browser.i18n.getMessage('allConnectionsSecure')
       });
     } else if (hasAnyInsecure) {
       // Есть незащищенные соединения
       await browser.action.setBadgeText({ tabId, text: '' });
       await browser.action.setTitle({ 
         tabId, 
-        title: '⚠️ Обнаружены незащищенные соединения (HTTP)' 
+        title: browser.i18n.getMessage('insecureConnectionsDetected')
       });
     } else {
       // Нет данных

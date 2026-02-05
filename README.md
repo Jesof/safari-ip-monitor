@@ -13,10 +13,12 @@ A Safari extension for macOS that monitors network connections, displays securit
 
 - **Real-time Network Monitoring** - Tracks all network requests from web pages
 - **Security Status** - Shows HTTPS/HTTP connection status with visual indicators
+- **Domain Sorting** - Domains sorted by request count (most active first)
+- **Auto-refresh** - Real-time updates every 2 seconds
 - **IPv6 Support Detection** - Checks and displays IPv6 availability for domains
 - **DNS Resolution** - Resolves domain IP addresses (IPv4 and IPv6) via DNS-over-HTTPS
 - **Privacy-Focused** - Local domains (.local, .home, .lan, .lab, .internal) are never sent to external DNS services
-- **Background Operation** - Host app runs invisibly, only Safari extension is visible
+- **Data Retention** - Keeps request data for 30 minutes
 - **Multilingual** - Supports Russian and English localization
 
 ## 🖼️ Screenshots
@@ -49,28 +51,45 @@ The extension displays:
    cd safari-ip-monitor
    ```
 
-2. **Open in Xcode:**
+2. **Configure code signing:**
+   ```bash
+   cp .env.example .env
+   # Edit .env and set your DEVELOPMENT_TEAM
+   ```
+
+3. **Build and install:**
+   ```bash
+   ./build.sh
+   ```
+
+   The script will:
+   - Build the project with proper code signing
+   - Install to `/Applications`
+   - Register the extension
+   - Optionally launch the app and Safari
+
+4. **Enable in Safari:**
+   - Open Safari → Settings → Extensions
+   - Enable "Safari IP Monitor"
+   - Enable "Develop → Allow Unsigned Extensions" (for development builds)
+
+### Alternative: Build with Xcode
+
+1. **Open in Xcode:**
    ```bash
    open "Safari IP Monitor.xcodeproj"
    ```
 
-3. **Configure Code Signing:**
+2. **Configure Code Signing:**
    - Select the project in Xcode navigator
    - Go to "Signing & Capabilities" tab
    - Set your Development Team for both targets:
      - Safari IP Monitor
      - Safari IP Monitor Extension
 
-4. **Build and Run:**
+3. **Build and Run:**
    - Press `Cmd+B` to build
    - Press `Cmd+R` to run
-   - The app will launch and automatically close (this is by design)
-   - The extension will be registered with Safari
-
-5. **Enable in Safari:**
-   - Open Safari → Settings → Extensions
-   - Enable "Safari IP Monitor"
-   - Grant necessary permissions
 
 ## 🔧 Configuration
 
@@ -97,6 +116,8 @@ These domains are **never** sent to external DNS-over-HTTPS services.
 
 ```
 Safari IP Monitor/
+├── build.sh                        # Build & install script
+├── .env.example                    # Template for code signing config
 ├── Safari IP Monitor/              # Host application
 │   ├── AppDelegate.swift           # App lifecycle (auto-close)
 │   ├── ViewController.swift        # Main window (minimal UI)

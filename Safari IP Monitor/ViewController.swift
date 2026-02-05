@@ -37,7 +37,7 @@ class ViewController: NSViewController {
     }
     
     @IBAction func openSafariPreferences(_ sender: Any) {
-        SFSafariApplication.showPreferencesForExtension(withIdentifier: "com.safari.ipmonitor.extension") { error in
+        SFSafariApplication.showPreferencesForExtension(withIdentifier: "ru.jesof.safari.ipmonitor.extension") { error in
             if let error = error {
                 self.showAlert(title: "Ошибка", message: error.localizedDescription)
             }
@@ -49,7 +49,7 @@ class ViewController: NSViewController {
     }
     
     private func updateExtensionStatus() {
-        SFSafariExtensionManager.getStateOfSafariExtension(withIdentifier: "com.safari.ipmonitor.extension") { (state, error) in
+        SFSafariExtensionManager.getStateOfSafariExtension(withIdentifier: "ru.jesof.safari.ipmonitor.extension") { (state, error) in
             DispatchQueue.main.async {
                 if let error = error {
                     self.extensionStatusLabel?.stringValue = "Ошибка: \(error.localizedDescription)"

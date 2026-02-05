@@ -49,6 +49,7 @@ iOSInjectionProject/
 *.certSigningRequest
 *.mobileprovision
 *.provisionprofile
+.env
 
 # IDE
 .vscode/
