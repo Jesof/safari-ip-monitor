@@ -40,6 +40,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       await saveSetting('dnsResolveEnabled', dnsResolveToggle.checked);
       await saveSetting('dnsExcludeLocal', dnsLocalExcludeToggle.checked);
       
+      // Сбрасываем DNS кэш и IP данные для текущей вкладки
+      const tabsForClear = await browser.tabs.query({ active: true, currentWindow: true });
+      if (tabsForClear && tabsForClear.length > 0) {
+        await browser.runtime.sendMessage({
+          action: 'clearDnsCache',
+          tabId: tabsForClear[0].id
+        });
+      }
+      
       // Очищаем и перезапрашиваем данные
       tableBody.innerHTML = '';
       loadingEl.style.display = 'flex';
@@ -262,9 +271,20 @@ function createIPAddressesView(domain, ipAddresses, tabId) {
 function updateIPAddressesView(container, ips, domain) {
   container.innerHTML = '';
   
+  // Информация о резолвере
+  if (ips && ips.resolver) {
+    const resolverBadge = document.createElement('div');
+    resolverBadge.className = `resolver-badge resolver-${ips.resolver}`;
+    resolverBadge.textContent = getResolverLabel(ips.resolver);
+    container.appendChild(resolverBadge);
+  }
+  
   // Проверка на локальный домен
   if (ips.isLocal) {
-    container.innerHTML = '<span class="ip-local">🏠 ' + browser.i18n.getMessage('ipLocal') + '</span>';
+    const localSpan = document.createElement('span');
+    localSpan.className = 'ip-local';
+    localSpan.textContent = '🏠 ' + browser.i18n.getMessage('ipLocal');
+    container.appendChild(localSpan);
     return;
   }
   
@@ -332,6 +352,19 @@ function updateIPAddressesView(container, ips, domain) {
     
     ipv6Section.appendChild(ipv6List);
     container.appendChild(ipv6Section);
+  }
+}
+
+function getResolverLabel(resolver) {
+  switch (resolver) {
+    case 'system':
+      return browser.i18n.getMessage('resolverSystem');
+    case 'doh':
+      return browser.i18n.getMessage('resolverDoh');
+    case 'local':
+      return browser.i18n.getMessage('resolverLocal');
+    default:
+      return browser.i18n.getMessage('resolverUnknown');
   }
 }
 

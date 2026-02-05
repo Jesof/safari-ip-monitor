@@ -79,6 +79,22 @@
     "message": "Неизвестно",
     "description": "IP адрес неизвестен"
   },
+  "resolverSystem": {
+    "message": "Системный DNS",
+    "description": "Метка резолвера для системного DNS"
+  },
+  "resolverDoh": {
+    "message": "DNS-over-HTTPS",
+    "description": "Метка резолвера для DoH"
+  },
+  "resolverLocal": {
+    "message": "Локальный (без внешнего DNS)",
+    "description": "Метка резолвера для локальных доменов"
+  },
+  "resolverUnknown": {
+    "message": "Резолвер неизвестен",
+    "description": "Метка резолвера для неизвестного"
+  },
   "clickToCopy": {
     "message": "Кликните чтобы скопировать",
     "description": "Подсказка для копирования в буфер обмена"

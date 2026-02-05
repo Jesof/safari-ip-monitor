@@ -438,6 +438,43 @@ main {
   max-width: 100%;
 }
 
+.resolver-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  width: fit-content;
+}
+
+.resolver-system {
+  background: #ecfeff;
+  color: #0e7490;
+  border: 1px solid #a5f3fc;
+}
+
+.resolver-doh {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.resolver-local {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.resolver-unknown {
+  background: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+}
+
 .ip-section {
   display: flex;
   flex-direction: column;

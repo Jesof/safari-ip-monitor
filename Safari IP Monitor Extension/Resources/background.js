@@ -427,6 +427,24 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     
     return true; // Асинхронный ответ
   }
+
+  // Очистка DNS кэша и IP данных (для обновления после смены настроек)
+  if (message.action === 'clearDnsCache') {
+    const { tabId } = message;
+    
+    dnsCache.clear();
+    
+    if (tabId && tabData.has(tabId)) {
+      const data = tabData.get(tabId);
+      for (const domainData of data.domains.values()) {
+        delete domainData.ipAddresses;
+        domainData.ipv6Support = null;
+      }
+    }
+    
+    sendResponse({ success: true });
+    return false;
+  }
 });
 
 // Проверка является ли домен локальным
@@ -471,27 +489,32 @@ function isLocalDomain(domain) {
 async function resolveIPAddresses(domain, options = {}) {
   try {
     const { excludeLocalDomains = true } = options;
+    const isLocal = isLocalDomain(domain);
     
-    // Проверяем кэш
-    const cached = dnsCache.get(domain);
-    if (cached && (Date.now() - cached.timestamp) < DNS_CACHE_TTL) {
-      if (cached.isLocal && !excludeLocalDomains) {
-        // Кэш был собран в режиме исключения локальных доменов
-      } else {
-        return cached;
-      }
-    }
-    
-    // Проверяем является ли домен локальным
-    if (excludeLocalDomains && isLocalDomain(domain)) {
+    // Если исключение включено и домен локальный — не используем кэш с IP
+    if (excludeLocalDomains && isLocal) {
       const results = {
         ipv4: [],
         ipv6: [],
         isLocal: true,
+        resolver: 'local',
         timestamp: Date.now()
       };
       dnsCache.set(domain, results);
       return results;
+    }
+    
+    // Проверяем кэш
+    const cached = dnsCache.get(domain);
+    if (cached && (Date.now() - cached.timestamp) < DNS_CACHE_TTL) {
+      if (cached.isLocal) {
+        if (excludeLocalDomains) {
+          return cached;
+        }
+        // Исключение выключено — не используем кэш локального домена
+      } else {
+        return cached;
+      }
     }
     
     // Пытаемся использовать системный резолвер через native messaging
@@ -502,13 +525,26 @@ async function resolveIPAddresses(domain, options = {}) {
     }
     
     // Fallback: DNS-over-HTTPS
+    // Никогда не отправляем локальные домены в DoH
+    if (isLocal) {
+      const results = {
+        ipv4: [],
+        ipv6: [],
+        isLocal: true,
+        resolver: 'local',
+        timestamp: Date.now()
+      };
+      cacheDNSResult(domain, results);
+      return results;
+    }
+    
     const dohResults = await resolveIPAddressesDoH(domain);
     cacheDNSResult(domain, dohResults);
     return dohResults;
     
   } catch (error) {
     console.log('Ошибка DNS lookup:', error);
-    return { ipv4: [], ipv6: [], timestamp: Date.now() };
+    return { ipv4: [], ipv6: [], resolver: 'unknown', timestamp: Date.now() };
   }
 }
 
@@ -533,6 +569,7 @@ async function resolveIPAddressesNative(domain) {
       ipv4: Array.isArray(response.ipv4) ? response.ipv4 : [],
       ipv6: Array.isArray(response.ipv6) ? response.ipv6 : [],
       isLocal: false,
+      resolver: 'system',
       timestamp: Date.now()
     };
   } catch (error) {
@@ -543,10 +580,20 @@ async function resolveIPAddressesNative(domain) {
 
 // Резолюция IP через DNS-over-HTTPS (fallback)
 async function resolveIPAddressesDoH(domain) {
+  if (isLocalDomain(domain)) {
+    return {
+      ipv4: [],
+      ipv6: [],
+      isLocal: true,
+      resolver: 'local',
+      timestamp: Date.now()
+    };
+  }
   const results = {
     ipv4: [],
     ipv6: [],
     isLocal: false,
+    resolver: 'doh',
     timestamp: Date.now()
   };
   
