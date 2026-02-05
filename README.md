@@ -3,7 +3,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Platform](https://img.shields.io/badge/platform-macOS%2011.5%2B-blue.svg)](https://www.apple.com/macos/)
 [![Swift](https://img.shields.io/badge/Swift-5.0-orange.svg)](https://swift.org)
-[![GitHub release](https://img.shields.io/github/v/release/Jesof/safari-ip-monitor)](https://github.com/Jesof/safari-ip-monitor/releases)
 
 A Safari extension for macOS that monitors network connections, displays security information, and checks IPv6 support for visited websites.
 
