@@ -21,6 +21,12 @@ A Safari extension for macOS that monitors network connections, displays securit
 
 ## 🖼️ Screenshots
 
+### Domain with Resolved IP Addresses
+<img src="assets/FQDN_with_IP.png" alt="Extension showing domain with resolved IP addresses" width="600">
+
+### Domain without IP Resolution (Local Domain)
+<img src="assets/FQDN_without_IP.png" alt="Extension showing local domain with privacy protection" width="600">
+
 The extension displays:
 - Domain names with request counts
 - Connection security (🔒 HTTPS or ⚠️ HTTP)
