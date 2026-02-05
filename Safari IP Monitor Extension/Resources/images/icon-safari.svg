@@ -1,0 +1,22 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- AdGuard-style outline icon for Safari Toolbar -->
+  <!-- Transparent background -->
+  
+  <g transform="translate(512, 512) scale(0.9) translate(-512, -512)">
+    
+    <!-- Shield Outline -->
+    <!-- Reduced stroke width to 50 for elegance -->
+    <path d="M 512 100 C 350 150, 200 190, 120 220 L 120 500 C 120 720, 280 880, 512 980 C 744 880, 904 720, 904 500 L 904 220 C 824 190, 674 150, 512 100 Z" 
+          fill="none" stroke="#10b981" stroke-width="50" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- "IP" Text stylized -->
+    <g stroke="#10b981" stroke-width="50" stroke-linecap="round" stroke-linejoin="round" fill="none">
+        <!-- I: Adjusted to x=380 (centered relative to gap) -->
+        <line x1="380" y1="350" x2="380" y2="690" />
+        
+        <!-- P: Start x=510, slightly narrower loop for better balance -->
+        <path d="M 510 350 L 600 350 C 680 350, 710 400, 710 450 C 710 500, 680 550, 600 550 L 510 550" />
+    </g>
+          
+  </g>
+</svg>
