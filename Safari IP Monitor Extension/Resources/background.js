@@ -162,6 +162,9 @@ browser.webRequest.onBeforeRequest.addListener(
       domainData.requestCount++;
       domainData.types.add(type);
       
+      // Обновляем timestamp при любом запросе, чтобы продлить время жизни кэша
+      data.timestamp = Date.now();
+      
       // Отладка: логируем добавление доменов
       if (domain.includes('googleapis') || domain.includes('google')) {
         console.log('✅ Домен добавлен:', domain, 'запросов:', domainData.requestCount, 'типы:', Array.from(domainData.types));
