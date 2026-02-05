@@ -396,8 +396,9 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const { domain, tabId } = message;
     
     // Проверяем настройку DNS резолва
-    browser.storage.local.get('dnsResolveEnabled').then(result => {
+    browser.storage.local.get(['dnsResolveEnabled', 'dnsExcludeLocal']).then(result => {
       const dnsEnabled = result.dnsResolveEnabled !== undefined ? result.dnsResolveEnabled : true;
+      const excludeLocalDomains = result.dnsExcludeLocal !== undefined ? result.dnsExcludeLocal : true;
       
       if (!dnsEnabled) {
         // DNS резолв выключен - возвращаем пустой результат
@@ -406,7 +407,7 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
       
       // DNS резолв включен - выполняем резолюцию
-      resolveIPAddresses(domain).then(ips => {
+      resolveIPAddresses(domain, { excludeLocalDomains }).then(ips => {
         // Обновляем кэш
         if (tabData.has(tabId)) {
           const data = tabData.get(tabId);
@@ -464,19 +465,25 @@ function isLocalDomain(domain) {
   return false;
 }
 
-// Резолюция IP адресов через DNS-over-HTTPS
+// Резолюция IP адресов через системный резолвер (native)
 // Примечание: Safari не предоставляет прямой доступ к фактически использованным IP
 // Эта функция показывает все доступные IP адреса домена через DNS
-async function resolveIPAddresses(domain) {
+async function resolveIPAddresses(domain, options = {}) {
   try {
+    const { excludeLocalDomains = true } = options;
+    
     // Проверяем кэш
     const cached = dnsCache.get(domain);
     if (cached && (Date.now() - cached.timestamp) < DNS_CACHE_TTL) {
-      return cached;
+      if (cached.isLocal && !excludeLocalDomains) {
+        // Кэш был собран в режиме исключения локальных доменов
+      } else {
+        return cached;
+      }
     }
     
     // Проверяем является ли домен локальным
-    if (isLocalDomain(domain)) {
+    if (excludeLocalDomains && isLocalDomain(domain)) {
       const results = {
         ipv4: [],
         ipv6: [],
@@ -487,59 +494,118 @@ async function resolveIPAddresses(domain) {
       return results;
     }
     
-    const results = {
-      ipv4: [],
-      ipv6: [],
-      isLocal: false,
-      timestamp: Date.now()
-    };
-    
-    // Параллельные запросы для IPv4 и IPv6
-    const [ipv4Response, ipv6Response] = await Promise.all([
-      fetch(
-        `https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=A`,
-        { method: 'GET', headers: { 'Accept': 'application/dns-json' } }
-      ).catch(() => null),
-      fetch(
-        `https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=AAAA`,
-        { method: 'GET', headers: { 'Accept': 'application/dns-json' } }
-      ).catch(() => null)
-    ]);
-    
-    // Обработка IPv4 (A записи)
-    if (ipv4Response?.ok) {
-      const ipv4Data = await ipv4Response.json();
-      if (ipv4Data.Answer) {
-        results.ipv4 = ipv4Data.Answer
-          .filter(a => a.type === 1) // Тип A
-          .map(a => a.data);
-      }
+    // Пытаемся использовать системный резолвер через native messaging
+    const nativeResults = await resolveIPAddressesNative(domain);
+    if (nativeResults) {
+      cacheDNSResult(domain, nativeResults);
+      return nativeResults;
     }
     
-    // Обработка IPv6 (AAAA записи)
-    if (ipv6Response?.ok) {
-      const ipv6Data = await ipv6Response.json();
-      if (ipv6Data.Answer) {
-        results.ipv6 = ipv6Data.Answer
-          .filter(a => a.type === 28) // Тип AAAA
-          .map(a => a.data);
-      }
-    }
-    
-    // Сохраняем в кэш
-    dnsCache.set(domain, results);
-    
-    // Очистка старых записей кэша (максимум 100 доменов)
-    if (dnsCache.size > 100) {
-      const oldestKey = dnsCache.keys().next().value;
-      dnsCache.delete(oldestKey);
-    }
-    
-    return results;
+    // Fallback: DNS-over-HTTPS
+    const dohResults = await resolveIPAddressesDoH(domain);
+    cacheDNSResult(domain, dohResults);
+    return dohResults;
     
   } catch (error) {
     console.log('Ошибка DNS lookup:', error);
     return { ipv4: [], ipv6: [], timestamp: Date.now() };
+  }
+}
+
+// Резолюция через нативный системный резолвер
+async function resolveIPAddressesNative(domain) {
+  if (!browser?.runtime?.sendNativeMessage) {
+    return null;
+  }
+  
+  const message = { name: 'performDNSLookup', domain };
+  
+  try {
+    const response = await sendNativeMessage(message);
+    if (!response || response.error) {
+      if (response?.error) {
+        console.log('Native DNS error:', response.error);
+      }
+      return null;
+    }
+    
+    return {
+      ipv4: Array.isArray(response.ipv4) ? response.ipv4 : [],
+      ipv6: Array.isArray(response.ipv6) ? response.ipv6 : [],
+      isLocal: false,
+      timestamp: Date.now()
+    };
+  } catch (error) {
+    console.log('Native DNS lookup failed:', error);
+    return null;
+  }
+}
+
+// Резолюция IP через DNS-over-HTTPS (fallback)
+async function resolveIPAddressesDoH(domain) {
+  const results = {
+    ipv4: [],
+    ipv6: [],
+    isLocal: false,
+    timestamp: Date.now()
+  };
+  
+  // Параллельные запросы для IPv4 и IPv6
+  const [ipv4Response, ipv6Response] = await Promise.all([
+    fetch(
+      `https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=A`,
+      { method: 'GET', headers: { 'Accept': 'application/dns-json' } }
+    ).catch(() => null),
+    fetch(
+      `https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=AAAA`,
+      { method: 'GET', headers: { 'Accept': 'application/dns-json' } }
+    ).catch(() => null)
+  ]);
+  
+  // Обработка IPv4 (A записи)
+  if (ipv4Response?.ok) {
+    const ipv4Data = await ipv4Response.json();
+    if (ipv4Data.Answer) {
+      results.ipv4 = ipv4Data.Answer
+        .filter(a => a.type === 1) // Тип A
+        .map(a => a.data);
+    }
+  }
+  
+  // Обработка IPv6 (AAAA записи)
+  if (ipv6Response?.ok) {
+    const ipv6Data = await ipv6Response.json();
+    if (ipv6Data.Answer) {
+      results.ipv6 = ipv6Data.Answer
+        .filter(a => a.type === 28) // Тип AAAA
+        .map(a => a.data);
+    }
+  }
+  
+  return results;
+}
+
+// Единая точка отправки native сообщений (совместимость)
+async function sendNativeMessage(message) {
+  if (typeof browser?.runtime?.sendNativeMessage !== 'function') {
+    throw new Error('sendNativeMessage not available');
+  }
+  
+  // Если API требует appId, пробуем его; иначе отправляем только сообщение
+  if (browser.runtime.sendNativeMessage.length >= 2) {
+    return browser.runtime.sendNativeMessage('ru.jesof.safari.ipmonitor.extension', message);
+  }
+  
+  return browser.runtime.sendNativeMessage(message);
+}
+
+function cacheDNSResult(domain, results) {
+  dnsCache.set(domain, results);
+  
+  // Очистка старых записей кэша (максимум 100 доменов)
+  if (dnsCache.size > 100) {
+    const oldestKey = dnsCache.keys().next().value;
+    dnsCache.delete(oldestKey);
   }
 }
 

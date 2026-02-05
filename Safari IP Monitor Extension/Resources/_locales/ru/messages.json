@@ -55,6 +55,10 @@
     "message": "Резолвить IP через DNS",
     "description": "Опция включения/выключения DNS резолва IP адресов"
   },
+  "dnsExcludeLocalOption": {
+    "message": "Исключать локальные домены",
+    "description": "Опция исключения резолва локальных доменов"
+  },
   "statusMixed": {
     "message": "Смешанный",
     "description": "Смешанный статус безопасности (HTTP и HTTPS)"

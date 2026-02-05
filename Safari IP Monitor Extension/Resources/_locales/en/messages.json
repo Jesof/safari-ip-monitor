@@ -55,6 +55,10 @@
     "message": "Resolve IP via DNS",
     "description": "Option to enable/disable DNS IP address resolution"
   },
+  "dnsExcludeLocalOption": {
+    "message": "Exclude local domains",
+    "description": "Option to exclude local domains from DNS resolving"
+  },
   "statusMixed": {
     "message": "Mixed",
     "description": "Mixed security status (HTTP and HTTPS)"

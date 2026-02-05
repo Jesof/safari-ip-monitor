@@ -18,8 +18,8 @@ A Safari extension for macOS that monitors network connections, displays securit
 - **Domain Sorting** - Domains sorted by request count (most active first)
 - **Auto-refresh** - Real-time updates every 2 seconds
 - **IPv6 Support Detection** - Checks and displays IPv6 availability for domains
-- **DNS Resolution** - Resolves domain IP addresses (IPv4 and IPv6) via DNS-over-HTTPS
-- **Privacy-Focused** - Local domains (.local, .home, .lan, .lab, .internal) are never sent to external DNS services
+- **DNS Resolution** - Resolves domain IP addresses (IPv4 and IPv6) via system resolver (native), with fallback to DNS-over-HTTPS
+- **Privacy-Focused** - Local domains (.local, .home, .lan, .lab, .internal) can be excluded from DNS resolving
 - **Data Retention** - Keeps request data for 30 minutes
 - **Multilingual** - Supports Russian and English localization
 
@@ -106,12 +106,13 @@ The extension automatically protects privacy for local domains:
 - Private IP ranges (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16)
 - Link-local addresses (169.254.0.0/16, fe80::/10)
 
-These domains are **never** sent to external DNS-over-HTTPS services.
+These domains are **excluded** from DNS resolving by default (toggle in settings).
 
 ### DNS Resolution
 
 - Toggle DNS resolution on/off in the extension popup
-- Uses Google DNS-over-HTTPS (dns.google) for public domains
+- Toggle exclusion of local domains in the extension popup
+- Uses system resolver (native) for public domains, with fallback to Google DNS-over-HTTPS (dns.google)
 - Results are cached for 5 minutes to reduce queries
 
 ## 🏗️ Project Structure
@@ -143,7 +144,8 @@ Safari IP Monitor/
 - **JavaScript** - Web extension logic
 - **WebRequest API** - Network monitoring
 - **WebRTC** - Public IP detection
-- **DNS-over-HTTPS** - Secure DNS resolution
+- **System DNS Resolver** - Native DNS resolution via system resolver
+- **DNS-over-HTTPS** - Fallback DNS resolution
 
 ### Extension Architecture
 
@@ -151,7 +153,7 @@ Safari IP Monitor/
    - Monitors `webRequest.onBeforeRequest` events
    - Tracks domains and connection security
    - Manages DNS resolution and caching
-   - Filters local domains for privacy
+   - Filters local domains for privacy (configurable)
 
 2. **Content Script** (`content.js`)
    - Detects user's public IP via WebRTC STUN
@@ -161,11 +163,11 @@ Safari IP Monitor/
 3. **Popup UI** (`popup.js`)
    - Displays collected data in a table
    - Shows statistics and security status
-   - Allows toggling DNS resolution
+   - Allows toggling DNS resolution and local domain exclusion
 
 ## 🔒 Security & Privacy
 
-- **No telemetry** - No data is sent to any servers except DNS-over-HTTPS for public domains
+- **No telemetry** - No data is sent to any servers except DNS-over-HTTPS fallback for public domains
 - **Local processing** - All data stays on your device
 - **Code signing** - Application is properly signed with Apple Developer certificate
 - **Sandboxed** - Runs in macOS App Sandbox with minimal permissions
@@ -188,7 +190,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## 🐛 Known Issues
 
 - Safari on macOS may not expose all `webRequest` events (e.g., font requests might not be visible in some cases)
-- DNS-over-HTTPS queries are limited to Google DNS (future versions may support other providers)
+- DNS-over-HTTPS fallback queries are limited to Google DNS (future versions may support other providers)
 
 ## 📋 TODO
 

@@ -9,15 +9,25 @@
 <body>
   <div class="container">
     <header>
-      <h1 class="title">
-        <span class="icon">🔍</span>
-        <span data-i18n="popupTitle">Информация о соединениях</span>
-      </h1>
-      <div class="settings">
+      <div class="header-row">
+        <h1 class="title">
+          <span class="icon">🔍</span>
+          <span data-i18n="popupTitle">Информация о соединениях</span>
+        </h1>
+        <button class="settings-button" id="settings-toggle" aria-expanded="false" aria-label="Settings">
+          ⚙️
+        </button>
+      </div>
+      <div class="settings" id="settings-panel" aria-hidden="true">
         <label class="toggle-label">
           <input type="checkbox" id="dns-resolve-toggle" checked>
           <span class="toggle-switch"></span>
           <span class="toggle-text" data-i18n="dnsResolveOption">Резолвить IP через DNS</span>
+        </label>
+        <label class="toggle-label">
+          <input type="checkbox" id="dns-local-exclude-toggle" checked>
+          <span class="toggle-switch"></span>
+          <span class="toggle-text" data-i18n="dnsExcludeLocalOption">Исключать локальные домены</span>
         </label>
       </div>
     </header>

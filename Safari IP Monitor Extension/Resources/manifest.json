@@ -38,7 +38,8 @@
   "permissions": [
     "webRequest",
     "tabs",
-    "storage"
+    "storage",
+    "nativeMessaging"
   ],
   
   "host_permissions": [

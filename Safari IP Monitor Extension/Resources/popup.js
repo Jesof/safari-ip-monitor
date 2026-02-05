@@ -10,6 +10,9 @@ const domainCountEl = document.getElementById('domain-count');
 const requestCountEl = document.getElementById('request-count');
 const secureStatusEl = document.getElementById('secure-status');
 const dnsResolveToggle = document.getElementById('dns-resolve-toggle');
+const dnsLocalExcludeToggle = document.getElementById('dns-local-exclude-toggle');
+const settingsToggleButton = document.getElementById('settings-toggle');
+const settingsPanel = document.getElementById('settings-panel');
 
 // Текущая вкладка и интервал обновления
 let currentTabId = null;
@@ -32,9 +35,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем настройки
     await loadSettings();
     
-    // Обработчик переключателя DNS
-    dnsResolveToggle.addEventListener('change', async () => {
+    // Обработчики переключателей настроек
+    const handleSettingsChange = async () => {
       await saveSetting('dnsResolveEnabled', dnsResolveToggle.checked);
+      await saveSetting('dnsExcludeLocal', dnsLocalExcludeToggle.checked);
+      
       // Очищаем и перезапрашиваем данные
       tableBody.innerHTML = '';
       loadingEl.style.display = 'flex';
@@ -55,7 +60,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           showNoData();
         }
       }
-    });
+    };
+    
+    dnsResolveToggle.addEventListener('change', handleSettingsChange);
+    dnsLocalExcludeToggle.addEventListener('change', handleSettingsChange);
     
     // Получаем текущую вкладку
     const tabs = await browser.tabs.query({ active: true, currentWindow: true });
@@ -91,12 +99,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+// Переключение панели настроек
+settingsToggleButton.addEventListener('click', () => {
+  const isOpen = settingsPanel.classList.toggle('open');
+  settingsToggleButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  settingsPanel.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+});
+
 // Загрузка настроек
 async function loadSettings() {
-  const result = await browser.storage.local.get('dnsResolveEnabled');
-  // По умолчанию включено
+  const result = await browser.storage.local.get(['dnsResolveEnabled', 'dnsExcludeLocal']);
+  
+  // По умолчанию DNS резолв включен
   const enabled = result.dnsResolveEnabled !== undefined ? result.dnsResolveEnabled : true;
   dnsResolveToggle.checked = enabled;
+  
+  // По умолчанию локальные домены исключены
+  const excludeLocal = result.dnsExcludeLocal !== undefined ? result.dnsExcludeLocal : true;
+  dnsLocalExcludeToggle.checked = excludeLocal;
 }
 
 // Сохранение настройки
