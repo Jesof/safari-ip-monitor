@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Safari IP Monitor",
   "description": "Отображает информацию о безопасности соединений и поддержке IPv6",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "default_locale": "ru",
   
   "icons": {
