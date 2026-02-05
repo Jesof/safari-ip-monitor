@@ -3,6 +3,58 @@
 
 (async function() {
   'use strict';
+
+  function isValidIPv4(ip) {
+    const parts = ip.split('.');
+    if (parts.length !== 4) return false;
+    return parts.every(part => {
+      if (!/^\d{1,3}$/.test(part)) return false;
+      const num = Number(part);
+      return num >= 0 && num <= 255;
+    });
+  }
+
+  function isPrivateOrReservedIPv4(ip) {
+    if (!isValidIPv4(ip)) return true;
+    const [a, b] = ip.split('.').map(Number);
+
+    if (a === 10 || a === 127 || a === 0) return true;
+    if (a === 169 && b === 254) return true;
+    if (a === 192 && b === 168) return true;
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT
+
+    return false;
+  }
+
+  function normalizeIPv6(ip) {
+    return ip.split('%')[0].toLowerCase();
+  }
+
+  function isValidIPv6(ip) {
+    if (!ip || ip.indexOf(':') === -1) return false;
+    return /^[0-9a-f:]+$/i.test(ip);
+  }
+
+  function isPrivateOrReservedIPv6(ip) {
+    const normalized = normalizeIPv6(ip);
+
+    if (!isValidIPv6(normalized)) return true;
+    if (normalized === '::1') return true;
+    if (normalized.startsWith('fe80:')) return true; // link-local
+    if (normalized.startsWith('fc') || normalized.startsWith('fd')) return true; // ULA
+    if (normalized.startsWith('2001:db8')) return true; // documentation
+
+    return false;
+  }
+
+  function getCandidateAddress(candidate) {
+    const parts = candidate.trim().split(/\s+/);
+    if (parts.length >= 6) {
+      return parts[4];
+    }
+    return null;
+  }
   
   // Определение публичного IP через WebRTC STUN
   async function detectPublicIP() {
@@ -34,37 +86,34 @@
           }
           
           const candidate = ice.candidate.candidate;
-          
-          // Регулярные выражения для поиска IP
-          const ipv4Regex = /([0-9]{1,3}(\.[0-9]{1,3}){3})/;
-          const ipv6Regex = /([a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/i;
-          
-          // Проверяем IPv4
-          const ipv4Match = candidate.match(ipv4Regex);
-          if (ipv4Match) {
-            const ip = ipv4Match[1];
-            // Проверяем, не локальный ли это адрес
-            if (!ip.startsWith('192.168.') && 
-                !ip.startsWith('10.') && 
-                !ip.startsWith('172.') &&
-                !ip.startsWith('127.')) {
-              result.ipv4 = ip;
-            } else {
-              result.local.push(ip);
-            }
+          const address = getCandidateAddress(candidate);
+
+          if (!address) {
+            return;
           }
-          
-          // Проверяем IPv6
-          const ipv6Match = candidate.match(ipv6Regex);
-          if (ipv6Match) {
-            const ip = ipv6Match[1];
-            // Проверяем, не локальный ли это адрес (fe80:: и т.д.)
-            if (!ip.toLowerCase().startsWith('fe80:') && 
-                !ip.toLowerCase().startsWith('::1')) {
-              result.ipv6 = ip;
-            } else {
-              result.local.push(ip);
+
+          if (address.includes('.')) {
+            if (!isValidIPv4(address)) {
+              return;
             }
+
+            if (isPrivateOrReservedIPv4(address)) {
+              result.local.push(address);
+              return;
+            }
+
+            result.ipv4 = address;
+            return;
+          }
+
+          if (address.includes(':')) {
+            const normalized = normalizeIPv6(address);
+            if (isPrivateOrReservedIPv6(normalized)) {
+              result.local.push(normalized);
+              return;
+            }
+
+            result.ipv6 = normalized;
           }
           
           // Если нашли оба типа адресов, завершаем

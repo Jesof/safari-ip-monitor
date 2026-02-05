@@ -63,7 +63,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           tabId: tabs[0].id
         });
         
-        if (response.success && response.data && response.data.domains.length > 0) {
+        const hasUserIP = response?.data?.userPublicIP && (response.data.userPublicIP.ipv4 || response.data.userPublicIP.ipv6);
+        if (response.success && response.data && (response.data.domains.length > 0 || hasUserIP)) {
           displayData(response.data, tabs[0].id);
         } else {
           showNoData();
@@ -90,7 +91,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       tabId: currentTab.id
     });
     
-    if (response.success && response.data && response.data.domains.length > 0) {
+    const hasUserIP = response?.data?.userPublicIP && (response.data.userPublicIP.ipv4 || response.data.userPublicIP.ipv6);
+    if (response.success && response.data && (response.data.domains.length > 0 || hasUserIP)) {
       console.log('📊 Получено доменов:', response.data.domains.length);
       console.log('Домены:', response.data.domains.map(d => d.domain));
       displayData(response.data, currentTab.id);
@@ -170,10 +172,7 @@ function displayData(data, tabId) {
   const hasSecure = domains.some(d => d.protocol === 'https');
   const hasInsecure = domains.some(d => d.protocol === 'http');
   
-  // Отображаем публичный IP пользователя (если есть)
-  if (userPublicIP && (userPublicIP.ipv4 || userPublicIP.ipv6)) {
-    displayUserPublicIP(userPublicIP);
-  }
+  updateUserPublicIPSection(userPublicIP);
   
   // Обновляем статистику
   const totalRequests = domains.reduce((sum, d) => sum + d.requestCount, 0);
@@ -434,10 +433,22 @@ function displayUserPublicIP(userIP) {
       <span class="user-ip-icon">🌐</span>
       <div class="user-ip-details">
         ${ipInfo.join('<br>')}
-        ${userIP.hasIPv6Connectivity ? '<span class="ipv6-enabled">' + browser.i18n.getMessage('ipv6Active') + '</span>' : ''}
+        ${userIP.ipv6 && userIP.hasIPv6Connectivity ? '<span class="ipv6-enabled">' + browser.i18n.getMessage('ipv6Active') + '</span>' : ''}
       </div>
     </div>
   `;
+}
+
+function updateUserPublicIPSection(userPublicIP) {
+  if (userPublicIP && (userPublicIP.ipv4 || userPublicIP.ipv6)) {
+    displayUserPublicIP(userPublicIP);
+    return;
+  }
+
+  const existingSection = document.querySelector('.user-ip-section');
+  if (existingSection) {
+    existingSection.remove();
+  }
 }
 
 // Обработка события копирования для визуальной обратной связи
@@ -469,7 +480,7 @@ async function refreshData() {
       tabId: currentTabId
     });
     
-    if (response.success && response.data && response.data.domains.length > 0) {
+    if (response.success && response.data) {
       // Обновляем данные и пересортируем
       updateDisplayData(response.data);
     }
@@ -487,6 +498,8 @@ function updateDisplayData(data) {
   
   // Сортируем домены по количеству запросов (по убыванию)
   domains.sort((a, b) => (b.requestCount || 0) - (a.requestCount || 0));
+
+  updateUserPublicIPSection(userPublicIP);
   
   // Обновляем статистику
   const totalRequests = domains.reduce((sum, d) => sum + d.requestCount, 0);
