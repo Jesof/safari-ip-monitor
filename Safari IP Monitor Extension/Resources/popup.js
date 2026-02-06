@@ -294,11 +294,6 @@ function updateIPAddressesView(container, ips, domain) {
     const ipv4Section = document.createElement('div');
     ipv4Section.className = 'ip-section ipv4-section';
     
-    const ipv4Label = document.createElement('span');
-    ipv4Label.className = 'ip-label';
-    ipv4Label.textContent = 'IPv4:';
-    ipv4Section.appendChild(ipv4Label);
-    
     const ipv4List = document.createElement('div');
     ipv4List.className = 'ip-list';
     
@@ -322,11 +317,6 @@ function updateIPAddressesView(container, ips, domain) {
   if (hasIPv6) {
     const ipv6Section = document.createElement('div');
     ipv6Section.className = 'ip-section ipv6-section';
-    
-    const ipv6Label = document.createElement('span');
-    ipv6Label.className = 'ip-label';
-    ipv6Label.textContent = 'IPv6:';
-    ipv6Section.appendChild(ipv6Label);
     
     const ipv6List = document.createElement('div');
     ipv6List.className = 'ip-list';
@@ -354,8 +344,6 @@ function getResolverLabel(resolver) {
       return browser.i18n.getMessage('resolverSystem');
     case 'doh':
       return browser.i18n.getMessage('resolverDoh');
-    case 'local':
-      return browser.i18n.getMessage('resolverLocal');
     default:
       return browser.i18n.getMessage('resolverUnknown');
   }
@@ -364,10 +352,14 @@ function getResolverLabel(resolver) {
 function updateDNSResolverStatus(domains) {
   if (!dnsResolverStatusEl) return;
 
+  const excludeLocalResolvers = dnsLocalExcludeToggle && dnsLocalExcludeToggle.checked;
   const resolvers = new Set();
   domains.forEach(domain => {
     const resolver = domain?.ipAddresses?.resolver;
     if (resolver) {
+      if (excludeLocalResolvers && resolver === 'local') {
+        return;
+      }
       resolvers.add(resolver);
     }
   });

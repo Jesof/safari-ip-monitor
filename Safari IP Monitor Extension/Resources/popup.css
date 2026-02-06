@@ -281,10 +281,24 @@ main {
 }
 
 .stat-value.dns-resolver {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 4px;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.3px;
+  width: fit-content;
+}
+
+.stat-value.dns-resolver.resolver-badge {
+  padding: 3px 8px;
+  border-radius: 4px;
+  gap: 4px;
+  font-size: 11px;
+  letter-spacing: 0.3px;
 }
 
 .stat-value.secure {
@@ -482,18 +496,34 @@ main {
   border: 1px solid #e5e7eb;
 }
 
+.stat-value.dns-resolver.resolver-system {
+  background: #ecfeff;
+  color: #0e7490;
+  border: 1px solid #a5f3fc;
+}
+
+.stat-value.dns-resolver.resolver-doh {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.stat-value.dns-resolver.resolver-local {
+  background: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.stat-value.dns-resolver.resolver-unknown {
+  background: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+}
+
 .ip-section {
   display: flex;
   flex-direction: column;
   gap: 4px;
-}
-
-.ip-label {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: #6b7280;
-  display: block;
 }
 
 .ip-list {

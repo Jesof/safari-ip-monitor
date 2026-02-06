@@ -80,19 +80,15 @@
     "description": "IP address unknown"
   },
   "resolverSystem": {
-    "message": "System DNS",
+    "message": "System",
     "description": "Resolver label for system DNS"
   },
   "resolverDoh": {
     "message": "DNS-over-HTTPS",
     "description": "Resolver label for DoH"
   },
-  "resolverLocal": {
-    "message": "Local (no external DNS)",
-    "description": "Resolver label for local domains"
-  },
   "resolverUnknown": {
-    "message": "Resolver unknown",
+    "message": "Unknown",
     "description": "Resolver label for unknown"
   },
   "clickToCopy": {

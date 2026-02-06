@@ -80,16 +80,12 @@
     "description": "IP адрес неизвестен"
   },
   "resolverSystem": {
-    "message": "Системный DNS",
+    "message": "Системный",
     "description": "Метка резолвера для системного DNS"
   },
   "resolverDoh": {
     "message": "DNS-over-HTTPS",
     "description": "Метка резолвера для DoH"
-  },
-  "resolverLocal": {
-    "message": "Локальный (без внешнего DNS)",
-    "description": "Метка резолвера для локальных доменов"
   },
   "resolverUnknown": {
     "message": "Резолвер неизвестен",
