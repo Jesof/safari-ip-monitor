@@ -9,6 +9,7 @@ const tableBody = document.getElementById('table-body');
 const domainCountEl = document.getElementById('domain-count');
 const requestCountEl = document.getElementById('request-count');
 const secureStatusEl = document.getElementById('secure-status');
+const dnsResolverStatusEl = document.getElementById('dns-resolver-status');
 const dnsResolveToggle = document.getElementById('dns-resolve-toggle');
 const dnsLocalExcludeToggle = document.getElementById('dns-local-exclude-toggle');
 const settingsToggleButton = document.getElementById('settings-toggle');
@@ -173,6 +174,7 @@ function displayData(data, tabId) {
   const hasInsecure = domains.some(d => d.protocol === 'http');
   
   updateUserPublicIPSection(userPublicIP);
+  updateDNSResolverStatus(domains);
   
   // Обновляем статистику
   const totalRequests = domains.reduce((sum, d) => sum + d.requestCount, 0);
@@ -270,14 +272,6 @@ function createIPAddressesView(domain, ipAddresses, tabId) {
 function updateIPAddressesView(container, ips, domain) {
   container.innerHTML = '';
   
-  // Информация о резолвере
-  if (ips && ips.resolver) {
-    const resolverBadge = document.createElement('div');
-    resolverBadge.className = `resolver-badge resolver-${ips.resolver}`;
-    resolverBadge.textContent = getResolverLabel(ips.resolver);
-    container.appendChild(resolverBadge);
-  }
-  
   // Проверка на локальный домен
   if (ips.isLocal) {
     const localSpan = document.createElement('span');
@@ -365,6 +359,36 @@ function getResolverLabel(resolver) {
     default:
       return browser.i18n.getMessage('resolverUnknown');
   }
+}
+
+function updateDNSResolverStatus(domains) {
+  if (!dnsResolverStatusEl) return;
+
+  const resolvers = new Set();
+  domains.forEach(domain => {
+    const resolver = domain?.ipAddresses?.resolver;
+    if (resolver) {
+      resolvers.add(resolver);
+    }
+  });
+
+  dnsResolverStatusEl.className = 'stat-value dns-resolver';
+
+  if (resolvers.size === 0) {
+    dnsResolverStatusEl.textContent = '-';
+    return;
+  }
+
+  if (resolvers.size === 1) {
+    const resolver = Array.from(resolvers)[0];
+    dnsResolverStatusEl.textContent = getResolverLabel(resolver);
+    dnsResolverStatusEl.className = `stat-value dns-resolver resolver-badge resolver-${resolver}`;
+    return;
+  }
+
+  const mixedLabel = browser.i18n.getMessage('dnsResolverMixed') || 'Mixed';
+  dnsResolverStatusEl.textContent = mixedLabel;
+  dnsResolverStatusEl.className = 'stat-value dns-resolver resolver-badge resolver-unknown';
 }
 
 // Резолюция IP адресов для домена
@@ -500,6 +524,7 @@ function updateDisplayData(data) {
   domains.sort((a, b) => (b.requestCount || 0) - (a.requestCount || 0));
 
   updateUserPublicIPSection(userPublicIP);
+  updateDNSResolverStatus(domains);
   
   // Обновляем статистику
   const totalRequests = domains.reduce((sum, d) => sum + d.requestCount, 0);

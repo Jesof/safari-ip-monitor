@@ -130,5 +130,13 @@
   "statSecure": {
     "message": "Защищено:",
     "description": "Статус защищённости"
+  },
+  "statDns": {
+    "message": "DNS",
+    "description": "Метка DNS резолвера"
+  },
+  "dnsResolverMixed": {
+    "message": "Смешанный",
+    "description": "Обнаружено несколько DNS резолверов"
   }
 }

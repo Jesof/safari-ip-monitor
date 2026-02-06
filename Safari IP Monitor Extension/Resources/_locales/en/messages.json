@@ -130,5 +130,13 @@
   "statSecure": {
     "message": "Secure:",
     "description": "Security status"
+  },
+  "statDns": {
+    "message": "DNS",
+    "description": "DNS resolver label"
+  },
+  "dnsResolverMixed": {
+    "message": "Mixed",
+    "description": "Multiple DNS resolvers detected"
   }
 }
