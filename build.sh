@@ -27,16 +27,25 @@ if [ -f "$ENV_FILE" ]; then
     source "$ENV_FILE"
 fi
 
-# Параметры подписи (из переменных окружения или .env)
-CODE_SIGN_IDENTITY="${CODE_SIGN_IDENTITY:-Apple Development}"
-DEVELOPMENT_TEAM="${DEVELOPMENT_TEAM:-}"
+# Проверка наличия .xcconfig файлов (предпочтительный способ)
+XCCONFIG_DEBUG="$PROJECT_DIR/Configurations/Debug.xcconfig"
+XCCONFIG_RELEASE="$PROJECT_DIR/Configurations/Release.xcconfig"
 
-# Проверка обязательных параметров
-if [ -z "$DEVELOPMENT_TEAM" ]; then
+if [ -f "$XCCONFIG_RELEASE" ]; then
+    echo -e "${BLUE}ℹ️  Найдены файлы .xcconfig - используем их${NC}"
+    # Извлекаем DEVELOPMENT_TEAM из .xcconfig
+    if [ -z "$DEVELOPMENT_TEAM" ]; then
+        DEVELOPMENT_TEAM=$(grep "^DEVELOPMENT_TEAM" "$XCCONFIG_RELEASE" | sed 's/.*= *//; s/;//g' | tr -d ' ')
+    fi
+elif [ -z "$DEVELOPMENT_TEAM" ]; then
     echo -e "${RED}Ошибка: DEVELOPMENT_TEAM не установлен${NC}"
     echo ""
     echo "Установите переменную окружения или создайте файл .env:"
     echo "  echo 'DEVELOPMENT_TEAM=YOUR_TEAM_ID' > .env"
+    echo ""
+    echo "Или создайте файлы конфигурации:"
+    echo "  cp .xcconfig.example Configurations/Debug.xcconfig"
+    echo "  cp .xcconfig.example Configurations/Release.xcconfig"
     echo ""
     echo "Или передайте как аргумент:"
     echo "  DEVELOPMENT_TEAM=YOUR_TEAM_ID ./build.sh"

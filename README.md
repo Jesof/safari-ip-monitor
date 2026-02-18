@@ -53,11 +53,23 @@ The extension displays:
    cd safari-ip-monitor
    ```
 
-2. **Configure code signing:**
+2. **Configure code signing (choose one method):**
+
+   **Method A: Using .xcconfig files (recommended):**
+   ```bash
+   cp .xcconfig.example Configurations/Debug.xcconfig
+   cp .xcconfig.example Configurations/Release.xcconfig
+   # Edit both files and set your DEVELOPMENT_TEAM
+   ```
+   
+   **Method B: Using .env file:**
    ```bash
    cp .env.example .env
    # Edit .env and set your DEVELOPMENT_TEAM
    ```
+   
+   > 💡 Find your Team ID at: [Apple Developer Portal](https://developer.apple.com/account)  
+   > Or in Xcode: Xcode → Settings → Accounts → Your Account → Team ID
 
 3. **Build and install:**
    ```bash

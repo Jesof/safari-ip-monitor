@@ -250,21 +250,24 @@ function createDomainRow(domainData, mainDomain, tabId) {
 function createIPAddressesView(domain, ipAddresses, tabId) {
   const container = document.createElement('div');
   container.className = 'ip-container';
-  
+
   if (!ipAddresses) {
     // IP еще не загружены - запускаем загрузку
     container.innerHTML = '<span class="ip-loading">⏳ ' + browser.i18n.getMessage('ipLoading') + '</span>';
-    
-    resolveIPAddresses(domain, tabId).then(ips => {
-      updateIPAddressesView(container, ips, domain);
-    }).catch(() => {
-      container.innerHTML = '<span class="ip-error">⚠️ ' + browser.i18n.getMessage('ipError') + '</span>';
-    });
-    
+
+    resolveIPAddresses(domain, tabId)
+      .then(ips => {
+        updateIPAddressesView(container, ips, domain);
+      })
+      .catch(error => {
+        console.error(`DNS error for ${domain}:`, error);
+        container.innerHTML = '<span class="ip-error">⚠️ ' + browser.i18n.getMessage('ipError') + '</span>';
+      });
+
   } else {
     updateIPAddressesView(container, ipAddresses, domain);
   }
-  
+
   return container;
 }
 
@@ -391,10 +394,23 @@ async function resolveIPAddresses(domain, tabId) {
       domain: domain,
       tabId: tabId
     });
-    
+
+    if (!response) {
+      console.warn(`Пустой ответ при резолюции IP для ${domain}`);
+      return null;
+    }
+
+    if (!response.success && response.error) {
+      console.error(`Ошибка резолюции IP для ${domain}: ${response.error}`);
+      return null;
+    }
+
     return response.success ? response.ips : null;
   } catch (error) {
-    console.error('Ошибка резолюции IP:', error);
+    // Игнорируем "Extension context invalidated" - это нормально при закрытии popup
+    if (error.message !== 'Extension context invalidated.') {
+      console.error('Ошибка резолюции IP:', error);
+    }
     return null;
   }
 }
