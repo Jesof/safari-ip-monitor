@@ -7,6 +7,8 @@ const tabData = new Map();
 // Кэш DNS результатов (домен -> {ipv4: [], ipv6: [], timestamp})
 const dnsCache = new Map();
 const DNS_CACHE_TTL = 300000; // 5 минут
+const DNS_CACHE_MAX_SIZE = 100; // Максимальное количество записей в кэше
+const DNS_CACHE_CLEANUP_INTERVAL = 60000; // Очистка каждые 1 минуту
 
 // Информация о публичном IP пользователя (через WebRTC)
 let userPublicIP = {
@@ -15,6 +17,38 @@ let userPublicIP = {
   hasIPv6Connectivity: false,
   timestamp: null
 };
+
+// Фоновая очистка DNS кэша от устаревших записей
+function startDnsCacheCleanup() {
+  setInterval(() => {
+    const now = Date.now();
+    let cleanedCount = 0;
+
+    for (const [domain, data] of dnsCache.entries()) {
+      if (now - data.timestamp > DNS_CACHE_TTL) {
+        dnsCache.delete(domain);
+        cleanedCount++;
+      }
+    }
+
+    // Если кэш всё ещё слишком большой, удаляем самые старые записи
+    if (dnsCache.size > DNS_CACHE_MAX_SIZE) {
+      // Сортируем по timestamp и удаляем самые старые
+      const sorted = Array.from(dnsCache.entries())
+        .sort((a, b) => a[1].timestamp - b[1].timestamp);
+      
+      const toDelete = sorted.slice(0, sorted.length - DNS_CACHE_MAX_SIZE);
+      for (const [domain] of toDelete) {
+        dnsCache.delete(domain);
+        cleanedCount++;
+      }
+    }
+
+    if (cleanedCount > 0) {
+      console.log(`🧹 DNS кэш очищен: удалено ${cleanedCount} записей (осталось: ${dnsCache.size})`);
+    }
+  }, DNS_CACHE_CLEANUP_INTERVAL);
+}
 
 // Восстановление данных из storage при пробуждении service worker
 async function restoreTabData() {
@@ -80,6 +114,9 @@ browser.runtime.onInstalled.addListener(() => {
 
 // Восстановление данных при запуске
 restoreTabData();
+
+// Запуск фоновой очистки DNS кэша
+startDnsCacheCleanup();
 
 // Обработка запросов перед отправкой
 browser.webRequest.onBeforeRequest.addListener(
@@ -556,18 +593,33 @@ async function resolveIPAddressesNative(domain) {
   if (!browser?.runtime?.sendNativeMessage) {
     return null;
   }
-  
+
   const message = { name: 'performDNSLookup', domain };
-  
+
   try {
     const response = await sendNativeMessage(message);
-    if (!response || response.error) {
-      if (response?.error) {
-        console.log('Native DNS error:', response.error);
-      }
+    
+    // Проверяем наличие ошибки в ответе
+    if (!response) {
+      console.log('Native DNS error: пустой ответ');
       return null;
     }
     
+    if (response.error) {
+      const errorCode = response.errorCode !== undefined ? response.errorCode : 'unknown';
+      const systemMessage = response.systemMessage || '';
+      console.log(`Native DNS error (code ${errorCode}): ${response.error}${systemMessage ? ' - ' + systemMessage : ''}`);
+      // Возвращаем пустой результат, но не null, чтобы не пытаться снова
+      return {
+        ipv4: [],
+        ipv6: [],
+        isLocal: false,
+        resolver: 'system',
+        timestamp: Date.now(),
+        error: response.error
+      };
+    }
+
     return {
       ipv4: Array.isArray(response.ipv4) ? response.ipv4 : [],
       ipv6: Array.isArray(response.ipv6) ? response.ipv6 : [],
@@ -651,12 +703,7 @@ async function sendNativeMessage(message) {
 
 function cacheDNSResult(domain, results) {
   dnsCache.set(domain, results);
-  
-  // Очистка старых записей кэша (максимум 100 доменов)
-  if (dnsCache.size > 100) {
-    const oldestKey = dnsCache.keys().next().value;
-    dnsCache.delete(oldestKey);
-  }
+  // Очистка теперь выполняется фоновым процессом startDnsCacheCleanup()
 }
 
 // Обратная совместимость: проверка только IPv6

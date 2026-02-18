@@ -1,0 +1,22 @@
+// Shared configuration for all build types
+// Общие настройки для всех конфигураций
+
+// Product Bundle Identifier
+PRODUCT_BUNDLE_IDENTIFIER = ru.jesof.safari.ipmonitor;
+PRODUCT_BUNDLE_IDENTIFIER_EXTENSION = ru.jesof.safari.ipmonitor.extension;
+
+// Version Information
+CURRENT_PROJECT_VERSION = 1;
+MARKETING_VERSION = 1.0;
+
+// macOS Deployment Target
+MACOSX_DEPLOYMENT_TARGET = 11.5;
+
+// Swift Version
+SWIFT_VERSION = 5.0;
+
+// Product Name
+PRODUCT_NAME = $(TARGET_NAME);
+
+// Skip Installation for Extension
+SKIP_INSTALL_EXTENSION = YES;

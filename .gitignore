@@ -51,6 +51,11 @@ iOSInjectionProject/
 *.provisionprofile
 .env
 
+# Xcode Configurations with Team ID (developers should create their own)
+Configurations/Debug.xcconfig
+Configurations/Release.xcconfig
+!Configurations/Shared.xcconfig
+
 # IDE
 .vscode/
 .idea/

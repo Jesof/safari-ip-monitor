@@ -1,0 +1,14 @@
+// ⚠️ ЭТОТ ФАЙЛ - ШАБЛОН! НЕ КОММИТЬТЕ СВОИ ДАННЫЕ!
+// Скопируйте этот файл в Configurations/Debug.xcconfig и Configurations/Release.xcconfig
+// и замените YOUR_TEAM_ID на ваш Apple Developer Team ID
+
+// Apple Developer Team ID
+// Получить можно в Apple Developer Portal: https://developer.apple.com/account
+// Или в Xcode: Xcode → Settings → Accounts → Ваш аккаунт → Team ID
+DEVELOPMENT_TEAM = YOUR_TEAM_ID;
+
+// Code Signing Identity
+CODE_SIGN_IDENTITY = Apple Development;
+
+// Code Signing Style
+CODE_SIGN_STYLE = Automatic;
